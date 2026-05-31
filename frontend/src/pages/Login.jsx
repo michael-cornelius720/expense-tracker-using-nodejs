@@ -1,61 +1,71 @@
+import "./Signup.css";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import API from "../services/api";
-import { useNavigate } from "react-router-dom";
+
 function Login() {
-  const [email, setEmail] = useState("");
   const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  console.log("Login button clicked");
+    try {
+      const response = await API.post("/api/auth/login", {
+        email,
+        password,
+      });
 
-  try {
-    const response = await API.post("/api/auth/login", {
-      email,
-      password
-    });
+      localStorage.setItem("token", response.data.token);
 
-    localStorage.setItem("token", response.data.token);
-    navigate("/dashboard");
-
-console.log("Token Saved");
-
-  } catch (err) {
-    console.log(err);
-  }
-};
+      navigate("/dashboard");
+    } catch (err) {
+      console.log(err.response?.data);
+      alert("Invalid email or password");
+    }
+  };
 
   return (
-    <div>
-      <h1>Login</h1>
+    <div className="signup-container">
+      <div className="signup-card">
 
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Enter Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <h1>Expense Tracker</h1>
+        <h3>Welcome Back</h3>
 
-        <br /><br />
+        <form onSubmit={handleLogin}>
 
-        <input
-          type="password"
-          placeholder="Enter Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <label>Email Address</label>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <br /><br />
+          <label>Password</label>
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        <button type="submit">
-          Login
-        </button>
-      </form>
+          <button type="submit">
+            Login
+          </button>
+
+        </form>
+
+        <p>
+          Don't have an account?{" "}
+          <Link to="/signup">Sign Up</Link>
+        </p>
+
+      </div>
     </div>
   );
 }
-
 
 export default Login;
