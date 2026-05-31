@@ -60,6 +60,11 @@ router.get("/:id",authMiddleware,async(req,res)=>{
             message:"Expense does not exists"
         })
     }
+    if (expense.userid.toString() !== req.user.id) {
+    return res.status(403).json({
+        message: "Access denied"
+    });
+}
     res.status(200).json({
     expense
 });
@@ -80,7 +85,22 @@ router.put("/:id",authMiddleware,async(req,res)=>{
         const expenseId = req.params.id;
         const { amount, category, description, date } = req.body;
     
-        const updatedExpense = await Expense.findByIdAndUpdate(
+        
+    const expense = await Expense.findById(expenseId);
+
+if (!expense) {
+    return res.status(404).json({
+        message: "Expense not found"
+    });
+}
+
+if (expense.userid.toString() !== req.user.id) {
+    return res.status(403).json({
+        message: "Access denied"
+    });
+}
+
+const updatedExpense = await Expense.findByIdAndUpdate(
     expenseId,
     {
         amount,
@@ -90,11 +110,6 @@ router.put("/:id",authMiddleware,async(req,res)=>{
     },
     { new: true }
 );
-if (!updatedExpense) {
-    return res.status(404).json({
-        message: "Expense not found"
-    });
-}
 res.status(200).json({
     message: "Expense updated successfully",
     updatedExpense
@@ -112,13 +127,22 @@ res.status(200).json({
 router.delete("/:id", authMiddleware, async(req,res)=>{
     try{
     const expenseId = req.params.id;
-    const deletedExpense = await Expense.findByIdAndDelete(expenseId);
-    if(!deletedExpense)
-    {
-        return res.status(404).json({
-                message: "Expense not found"
-            });
+    const expense = await Expense.findById(expenseId);
+    if (!expense) {
+    return res.status(404).json({
+        message: "Expense not found"
+    });
     }
+
+    if (expense.userid.toString() !== req.user.id) {
+    return res.status(403).json({
+        message: "Access denied"
+    });
+}
+
+   await Expense.findByIdAndDelete(expenseId);
+    
+   
 
     res.status(200).json({
         message:"Expenses deleted successfully"
